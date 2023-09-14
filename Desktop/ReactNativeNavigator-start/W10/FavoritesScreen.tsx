@@ -8,6 +8,7 @@ import {
   Image,
   ActivityIndicator,
   Button,
+  TextInput,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -65,6 +66,10 @@ const FavoriteItem = ({ url, navigation, onRemove }) => {
 
 const FavoritesScreen = ({ navigation }) => {
   const [favorites, setFavorites] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredFavorites, setFilteredFavorites] = useState([]);
+
+  const animeDataMap = {}; // Создаем объект для хранения данных о манге
 
   useFocusEffect(
     useCallback(() => {
@@ -75,6 +80,14 @@ const FavoritesScreen = ({ navigation }) => {
           const favoriteAnime = data
             .filter(([, value]) => value === "true")
             .map(([key]) => key);
+
+          // Здесь мы сохраняем данные о манге в объект animeDataMap
+          for (const url of favoriteAnime) {
+            const response = await fetch(url);
+            const animeData = await response.json();
+            animeDataMap[url] = animeData.data;
+          }
+
           setFavorites(favoriteAnime);
         } catch (error) {
           console.error("Error fetching favorite anime:", error);
@@ -83,6 +96,21 @@ const FavoritesScreen = ({ navigation }) => {
       fetchFavorites();
     }, [])
   );
+
+  useEffect(() => {
+    const filterFavorites = () => {
+      const filtered = favorites.filter((url) => {
+        const animeData = animeDataMap[url];
+        return (
+          animeData &&
+          animeData.title.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      });
+      setFilteredFavorites(filtered);
+    };
+
+    filterFavorites();
+  }, [searchQuery, favorites]);
 
   const clearStorage = async () => {
     try {
@@ -104,10 +132,20 @@ const FavoritesScreen = ({ navigation }) => {
     }
   };
 
+  const onSearchTextChanged = (text) => {
+    setSearchQuery(text);
+  };
+
   return (
     <View style={styles.container}>
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search by title"
+        onChangeText={onSearchTextChanged}
+        value={searchQuery}
+      />
       <FlatList
-        data={favorites}
+        data={searchQuery ? filteredFavorites : favorites}
         keyExtractor={(item) => item}
         renderItem={({ item }) => (
           <FavoriteItem
@@ -125,6 +163,12 @@ const FavoritesScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  searchInput: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: "#eee",
+    marginBottom: 10,
   },
   favoriteItemContainer: {
     flexDirection: "row",
