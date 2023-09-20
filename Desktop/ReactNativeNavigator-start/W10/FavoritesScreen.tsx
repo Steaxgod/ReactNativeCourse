@@ -13,7 +13,6 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { StackNavigationProp } from "@react-navigation/stack";
 
 interface AnimeData {
   images: {
@@ -42,25 +41,40 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({
   onRemove,
 }) => {
   const [animeData, setAnimeData] = useState<AnimeData | null>(null);
+  const [loading, setLoading] = useState(true); // Добавляем состояние загрузки
 
   useEffect(() => {
     const fetchAnimeData = async () => {
       try {
         const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
         const data = await response.json();
         setAnimeData(data.data);
       } catch (error) {
         console.error("Error fetching anime data:", error);
+      } finally {
+        setLoading(false); // После завершения запроса, даже при ошибке, устанавливаем состояние загрузки
       }
     };
 
     fetchAnimeData();
   }, [url]);
 
-  if (!animeData) {
+  if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#ff6b6b" />
+      </View>
+    );
+  }
+
+  if (!animeData) {
+    // Обрабатываем случай, если данные не были получены корректно
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Error fetching anime data</Text>
       </View>
     );
   }
@@ -102,13 +116,12 @@ const FavoritesScreen: React.FC<{
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredFavorites, setFilteredFavorites] = useState<string[]>([]);
   const animeDataMap: Record<string, AnimeData> = {};
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
       const fetchFavorites = async () => {
         try {
-          setIsLoading(true);
           const keys = await AsyncStorage.getAllKeys();
           const data = await AsyncStorage.multiGet(keys);
           const favoriteAnime = data
@@ -117,9 +130,17 @@ const FavoritesScreen: React.FC<{
 
           // Используем Promise.all для асинхронной загрузки всех данных
           const animeDataPromises = favoriteAnime.map(async (url) => {
-            const response = await fetch(url);
-            const animeData = await response.json();
-            animeDataMap[url] = animeData.data;
+            try {
+              const response = await fetch(url);
+              if (!response.ok) {
+                throw new Error("Network response was not ok");
+              }
+              const animeData = await response.json();
+              animeDataMap[url] = animeData.data;
+            } catch (error) {
+              console.error("Error fetching anime data:", error);
+              // Если произошла ошибка при загрузке данных, пропустить и продолжить
+            }
           });
 
           await Promise.all(animeDataPromises);
@@ -247,6 +268,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "black",
+  },
+  errorText: {
+    color: "red",
+    fontSize: 18,
+    textAlign: "center",
   },
 });
 
