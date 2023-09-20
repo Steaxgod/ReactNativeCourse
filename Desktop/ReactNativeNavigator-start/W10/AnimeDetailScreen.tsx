@@ -18,10 +18,29 @@ import { useFocusEffect, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
-// ... (предыдущий код)
-
+interface RouteParams {
+  animeUrl: string;
+}
+interface AnimeData {
+  title: string;
+  images: {
+    jpg: {
+      image_url: string;
+    };
+  };
+  score: number;
+  authors: {
+    name: string;
+  }[];
+  published: {
+    from: string;
+    to?: string;
+  };
+  background: string;
+  // Добавьте другие поля, если они присутствуют в данных
+}
 const AnimeDetailScreen = () => {
-  const route = useRoute<RouteParams>();
+  const route = useRoute<RouteParams | any>();
   const { animeUrl } = route.params;
   const [animeData, setAnimeData] = useState<AnimeData | null>(null);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
@@ -71,12 +90,19 @@ const AnimeDetailScreen = () => {
   };
 
   const formatDateString = (dateString: string | number | Date) => {
-    const options = { year: "numeric", month: "long", day: "numeric" };
-    const formattedDate = new Date(dateString).toLocaleDateString(
-      undefined,
-      options
-    );
-    return formattedDate;
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+    if (typeof dateString === "string") {
+      const formattedDate = new Date(dateString).toLocaleDateString(
+        undefined,
+        options
+      );
+      return formattedDate;
+    }
+    return "";
   };
 
   const navigation = useNavigation();

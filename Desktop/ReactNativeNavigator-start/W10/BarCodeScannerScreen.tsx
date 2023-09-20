@@ -4,7 +4,7 @@ import { BarCodeScanner } from "expo-barcode-scanner";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 export function BarCodeScannerScreen() {
-  const [hasPermission, setHasPermission] = useState(null);
+  const [hasPermission, setHasPermission] = useState(false);
   const [scanned, setScanned] = useState(false); // Изменено на false
   const [scannedData, setScannedData] = useState<string | null>(null); // Добавлено состояние для сохранения сканированных данных
 
@@ -19,18 +19,25 @@ export function BarCodeScannerScreen() {
 
   const navigation = useNavigation();
 
-  useEffect(() => {
-    const transfer = async (url: string) => {
-      navigation.navigate("AnimeDetailScreen", { animeUrl: url });
-    };
-    transfer("https://api.jikan.moe/v4/manga/1");
-  }, []);
+  // useEffect(() => {
+  //   const transfer = async (url: string) => {
+  //     navigation.navigate("AnimeDetailScreen", { animeUrl: url });
+  //   };
+  //   transfer("https://api.jikan.moe/v4/manga/1");
+  // }, []);
 
-  const handleBarCodeScanned = ({ type, data }) => {
+  const handleBarCodeScanned = ({
+    type,
+    data,
+  }: {
+    type: string;
+    data: string;
+  }) => {
     setScanned(true);
     setScannedData(data);
     alert(`Bar code with type ${type} and data ${data} has been scanned!`);
     // navigation.navigate("ProductDetailScreen", { productUrl: data }); // Изменено на передачу data
+    navigation.navigate("AnimeDetailScreen", { animeUrl: data });
   };
 
   const openScannedLink = () => {

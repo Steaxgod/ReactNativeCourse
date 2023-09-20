@@ -15,7 +15,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Drawer.Navigator
-        initialRouteName="Week 10: Empty"
+        initialRouteName="Week 10: Manga App"
         screenOptions={{ headerShown: false, drawerPosition: "right" }}
       >
         <Drawer.Screen name="Week 1: Setup Expo" component={Week1} />
@@ -23,7 +23,7 @@ export default function App() {
         <Drawer.Screen name="Week 3: Photo Gallery 2.0" component={Blank} />
         <Drawer.Screen name="Week 4: Weather App" component={Blank} />
         <Drawer.Screen name="Week 5: Midterm" component={TabNav} />
-        <Drawer.Screen name="Week 10: Empty" component={DrawNav} />
+        <Drawer.Screen name="Week 10: Manga App" component={DrawNav} />
         <Drawer.Screen name="Week 7: Empty" component={Blank} />
         <Drawer.Screen name="Week 8: Empty" component={Blank} />
       </Drawer.Navigator>
