@@ -17,6 +17,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { SharedElement } from "react-navigation-shared-element";
+import * as Animatable from "react-native-animatable"; // Импортируем Animatable
 
 interface RouteParams {
   animeUrl: string;
@@ -110,12 +112,22 @@ const AnimeDetailScreen = () => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <TouchableOpacity onPress={toggleFavorite}>
-          <Ionicons
-            name={isFavorite ? "heart" : "heart-outline"}
-            size={24}
-            color={isFavorite ? "#ff6b6b" : "#000"}
-          />
+        <TouchableOpacity
+          onPress={toggleFavorite}
+          // Добавляем анимацию "wave" для кнопки
+          style={styles.favoriteButton}
+        >
+          <Animatable.View
+            animation="pulse"
+            easing="ease-out"
+            iterationCount="infinite"
+          >
+            <Ionicons
+              name={isFavorite ? "heart" : "heart-outline"}
+              size={24}
+              color={isFavorite ? "#ff6b6b" : "#000"}
+            />
+          </Animatable.View>
         </TouchableOpacity>
       ),
     });
@@ -145,12 +157,14 @@ const AnimeDetailScreen = () => {
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>{animeData.title}</Text>
-      <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: animeData.images.jpg.image_url }}
-          style={styles.image}
-        />
-      </View>
+      <SharedElement id={`image.${animeData.title}`}>
+        <View style={styles.imageContainer}>
+          <Image
+            source={{ uri: animeData.images.jpg.image_url }}
+            style={styles.image}
+          />
+        </View>
+      </SharedElement>
       <View style={styles.ratingContainer}>
         {starIcons}
         <Text style={styles.rating}>{animeData.score.toFixed(2)}</Text>
@@ -223,6 +237,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     color: "#333",
+  },
+  favoriteButton: {
+    padding: 8,
   },
 });
 

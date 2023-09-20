@@ -138,18 +138,17 @@ const Profile: React.FC<{
   );
 
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
+    const result = (await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 1,
-    });
+    })) as ImagePicker.ImagePickerSuccessResult; // Явное указание типа
 
     if (!result.canceled) {
-      setAvatarUri(result.uri);
+      setAvatarUri(result.assets[0].uri);
     }
   };
-
   // Функция для сохранения никнейма
   const saveNickname = async (newNickname: string) => {
     try {
@@ -171,7 +170,10 @@ const Profile: React.FC<{
             onChangeText={(text) => setNickname(text)}
             style={styles.nicknameInput}
           />
-          <Button title="Save" onPress={() => saveNickname(nickname)} />
+          <Button
+            title="Save"
+            onPress={() => (nickname !== null ? saveNickname(nickname) : null)}
+          />
         </View>
       </Modal>
       <TouchableOpacity onPress={pickImage} style={styles.avatarContainer}>

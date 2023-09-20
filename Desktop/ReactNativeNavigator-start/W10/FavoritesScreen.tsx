@@ -13,6 +13,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import { StackNavigationProp } from "@react-navigation/stack";
 
 interface AnimeData {
   images: {
@@ -157,14 +158,9 @@ const FavoritesScreen: React.FC<{
 
   useEffect(() => {
     const filterFavorites = () => {
-      const filtered = favorites.filter((url) => {
-        const animeData = animeDataMap[url];
-
-        return (
-          animeData &&
-          animeData.title.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      });
+      const filtered = favorites.filter((title) =>
+        title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
       setFilteredFavorites(filtered);
     };
 
